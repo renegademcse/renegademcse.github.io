@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olympic Bunker Coach</title>
+<style>
+:root {
+  --gold: #c9a227;
+  --gold-light: #e8c547;
+  --dark: #0d0d0d;
+  --dark2: #1a1a1a;
+  --dark3: #242424;
+  --dark4: #2e2e2e;
+  --text: #e8e8e8;
+  --text-dim: #888;
+  --accent: #c9a227;
+  --green: #2ecc71;
+  --red: #e74c3c;
+  --blue: #3498db;
+  --orange: #e67e22;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+a { color: var(--gold); text-decoration: none; }
+
+/* NAV */
+#nav { background: var(--dark2); border-bottom: 2px solid var(--gold); display: flex; align-items: center; padding: 0 24px; height: 56px; gap: 8px; position: sticky; top: 0; z-index: 100; }
+#nav .logo { font-size: 1.2rem; font-weight: 700; color: var(--gold); letter-spacing: 1px; margin-right: auto; }
+#nav .logo span { color: var(--text); font-weight: 300; }
+.nav-btn { background: none; border: none; color: var(--text-dim); padding: 6px 14px; cursor: pointer; border-radius: 4px; font-size: 0.85rem; transition: all .2s; }
+.nav-btn:hover, .nav-btn.active { background: var(--dark4); color: var(--gold); }
+#xp-bar-wrap { display: flex; align-items: center; gap: 8px; margin-left: 12px; }
+#xp-label { font-size: 0.75rem; color: var(--gold); white-space: nowrap; }
+#xp-track { width: 100px; height: 6px; background: var(--dark4); border-radius: 3px; overflow: hidden; }
+#xp-fill { height: 100%; background: var(--gold); width: 0%; transition: width .5s; }
+
+/* SCREENS */
+.screen { display: none; padding: 28px 24px; max-width: 900px; margin: 0 auto; }
+.screen.active { display: block; }
+
+/* HOME */
+.hero { text-align: center; padding: 40px 0 32px; }
+.hero h1 { font-size: 2.4rem; color: var(--gold); letter-spacing: 2px; }
+.hero p { color: var(--text-dim); margin-top: 8px; font-size: 1rem; }
+.rank-badge { display: inline-block; margin-top: 16px; background: var(--dark3); border: 1px solid var(--gold); border-radius: 8px; padding: 8px 24px; font-size: 0.9rem; }
+.rank-badge strong { color: var(--gold); }
+
+.module-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 24px; }
+.module-card { background: var(--dark2); border: 1px solid var(--dark4); border-radius: 10px; padding: 20px; cursor: pointer; transition: all .2s; position: relative; overflow: hidden; }
+.module-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+.module-card.locked { opacity: .5; cursor: not-allowed; }
+.module-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.module-card h3 { font-size: 1rem; color: var(--gold); }
+.module-card p { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
+.module-card .prog-bar { margin-top: 12px; height: 4px; background: var(--dark4); border-radius: 2px; }
+.module-card .prog-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width .4s; }
+.module-card .lock-icon { position: absolute; top: 12px; right: 12px; font-size: 0.8rem; color: var(--text-dim); }
+.module-card .badge { position: absolute; top: 10px; right: 10px; background: var(--green); color: #000; font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+
+/* LESSON */
+#lesson-header { margin-bottom: 20px; }
+#lesson-header h2 { color: var(--gold); font-size: 1.4rem; }
+#lesson-header .meta { color: var(--text-dim); font-size: 0.8rem; margin-top: 4px; }
+.lesson-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--dark4); margin-bottom: 20px; }
+.ltab { background: none; border: none; color: var(--text-dim); padding: 8px 16px; cursor: pointer; border-bottom: 2px solid transparent; font-size: 0.85rem; }
+.ltab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* CONTENT blocks */
+.content-block { margin-bottom: 20px; }
+.tip-box { background: var(--dark3); border-left: 3px solid var(--gold); padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 0.88rem; line-height: 1.6; }
+.tip-box strong { color: var(--gold); display: block; margin-bottom: 4px; }
+.warn-box { background: var(--dark3); border-left: 3px solid var(--orange); padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 0.88rem; line-height: 1.6; }
+.warn-box strong { color: var(--orange); display: block; margin-bottom: 4px; }
+h3.section { color: var(--gold-light); font-size: 1rem; margin: 20px 0 8px; border-bottom: 1px solid var(--dark4); padding-bottom: 4px; }
+ul.checklist { list-style: none; padding: 0; }
+ul.checklist li { padding: 6px 0 6px 24px; position: relative; font-size: 0.88rem; color: var(--text); border-bottom: 1px solid var(--dark4); }
+ul.checklist li::before { content: '✦'; position: absolute; left: 0; color: var(--gold); font-size: 0.7rem; top: 8px; }
+p.body { font-size: 0.88rem; line-height: 1.7; color: #ccc; margin-bottom: 10px; }
+
+/* DIAGRAM */
+.diagram { background: var(--dark3); border: 1px solid var(--dark4); border-radius: 8px; padding: 16px; margin: 16px 0; }
+.diagram canvas { display: block; margin: 0 auto; }
+.diagram-label { text-align: center; font-size: 0.75rem; color: var(--text-dim); margin-top: 8px; }
+
+/* DRILL */
+.drill-card { background: var(--dark3); border: 1px solid var(--dark4); border-radius: 8px; padding: 18px; margin-bottom: 14px; }
+.drill-card h4 { color: var(--gold); font-size: 0.95rem; margin-bottom: 6px; }
+.drill-card p { font-size: 0.82rem; color: #bbb; line-height: 1.5; }
+.drill-card .drill-meta { margin-top: 10px; display: flex; gap: 12px; flex-wrap: wrap; }
+.drill-meta span { background: var(--dark4); border-radius: 4px; padding: 3px 10px; font-size: 0.75rem; color: var(--text-dim); }
+.drill-meta span strong { color: var(--text); }
+.complete-btn { margin-top: 12px; background: var(--dark4); border: 1px solid var(--gold); color: var(--gold); padding: 6px 18px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
+.complete-btn:hover { background: var(--gold); color: #000; }
+.complete-btn.done { background: var(--green); border-color: var(--green); color: #000; }
+
+/* QUIZ */
+.quiz-q { margin-bottom: 20px; }
+.quiz-q p { font-size: 0.9rem; margin-bottom: 10px; font-weight: 500; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; }
+.quiz-opt { background: var(--dark3); border: 1px solid var(--dark4); border-radius: 6px; padding: 10px 14px; cursor: pointer; font-size: 0.85rem; transition: all .2s; text-align: left; color: var(--text); }
+.quiz-opt:hover { border-color: var(--gold); }
+.quiz-opt.correct { border-color: var(--green); background: rgba(46,204,113,.1); color: var(--green); }
+.quiz-opt.wrong { border-color: var(--red); background: rgba(231,76,60,.1); color: var(--red); }
+.quiz-feedback { margin-top: 8px; font-size: 0.8rem; padding: 8px; border-radius: 4px; display: none; }
+.quiz-feedback.show { display: block; }
+.quiz-feedback.ok { background: rgba(46,204,113,.1); color: var(--green); }
+.quiz-feedback.fail { background: rgba(231,76,60,.1); color: var(--red); }
+#quiz-submit { margin-top: 16px; background: var(--gold); color: #000; border: none; padding: 10px 28px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+#quiz-result { margin-top: 16px; padding: 14px; border-radius: 8px; display: none; font-size: 0.9rem; }
+#quiz-result.pass { background: rgba(46,204,113,.15); border: 1px solid var(--green); color: var(--green); }
+#quiz-result.fail { background: rgba(231,76,60,.15); border: 1px solid var(--red); color: var(--red); }
+
+/* TRACKER */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--dark2); border: 1px solid var(--dark4); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-card .num { font-size: 2rem; font-weight: 700; color: var(--gold); }
+.stat-card .lbl { font-size: 0.75rem; color: var(--text-dim); margin-top: 4px; }
+.session-form { background: var(--dark2); border: 1px solid var(--dark4); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.session-form h3 { color: var(--gold); margin-bottom: 14px; font-size: 1rem; }
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 130px; }
+.form-group label { font-size: 0.75rem; color: var(--text-dim); }
+.form-group input, .form-group select, .form-group textarea { background: var(--dark3); border: 1px solid var(--dark4); color: var(--text); padding: 8px 10px; border-radius: 5px; font-size: 0.85rem; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--gold); }
+.btn-gold { background: var(--gold); color: #000; border: none; padding: 9px 22px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 0.88rem; transition: opacity .2s; }
+.btn-gold:hover { opacity: .85; }
+.session-list { margin-top: 4px; }
+.session-row { background: var(--dark2); border: 1px solid var(--dark4); border-radius: 6px; padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.session-row .score { font-size: 1.3rem; font-weight: 700; color: var(--gold); }
+.session-row .detail { font-size: 0.8rem; color: var(--text-dim); }
+.session-row .note { font-size: 0.78rem; color: #999; flex: 1; }
+.delete-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.85rem; }
+.delete-btn:hover { color: var(--red); }
+
+/* CHART */
+#score-chart { width: 100%; height: 160px; background: var(--dark3); border: 1px solid var(--dark4); border-radius: 8px; margin-bottom: 20px; }
+
+/* RULES */
+.rule-card { background: var(--dark2); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+.rule-card h4 { color: var(--blue); font-size: 0.9rem; margin-bottom: 6px; }
+.rule-card p { font-size: 0.82rem; color: #bbb; line-height: 1.5; }
+
+/* MENTAL */
+.mental-tool { background: var(--dark2); border: 1px solid var(--dark4); border-radius: 8px; padding: 18px; margin-bottom: 14px; }
+.mental-tool h4 { color: var(--gold); font-size: 0.95rem; margin-bottom: 8px; }
+.mental-tool p { font-size: 0.82rem; color: #bbb; line-height: 1.5; margin-bottom: 10px; }
+.breath-btn { background: var(--dark3); border: 1px solid var(--gold); color: var(--gold); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 0.85rem; }
+#breath-text { font-size: 1.5rem; text-align: center; color: var(--gold); padding: 20px; display: none; font-weight: 700; }
+
+/* BACK */
+.back-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 6px; }
+.back-btn:hover { color: var(--gold); }
+
+/* TOAST */
+#toast { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: #000; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 999; }
+#toast.show { opacity: 1; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--dark4); border-radius: 3px; }
+
+@media (max-width: 600px) {
+  #nav .logo { font-size: 1rem; }
+  .hero h1 { font-size: 1.6rem; }
+  .screen { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="logo">BUNKER <span>COACH</span></div>
+  <button class="nav-btn active" onclick="showScreen('home')">Home</button>
+  <button class="nav-btn" onclick="showScreen('tracker')">Tracker</button>
+  <button class="nav-btn" onclick="showScreen('rules')">Rules</button>
+  <div id="xp-bar-wrap">
+    <div id="xp-label">Rank: <span id="rank-name">Novice</span></div>
+    <div id="xp-track"><div id="xp-fill"></div></div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div class="hero">
+    <h1>OLYMPIC BUNKER COACH</h1>
+    <p>Structured path from first shot to international podium</p>
+    <div class="rank-badge">Current Rank: <strong id="home-rank">Novice</strong> &nbsp;|&nbsp; XP: <strong id="home-xp">0</strong></div>
+  </div>
+  <div class="module-grid" id="module-grid"></div>
+</div>
+
+<!-- LESSON -->
+<div id="screen-lesson" class="screen">
+  <button class="back-btn" onclick="showScreen('home')">← Back to Modules</button>
+  <div id="lesson-header"></div>
+  <div class="lesson-tabs" id="lesson-tabs"></div>
+  <div id="lesson-content"></div>
+</div>
+
+<!-- TRACKER -->
+<div id="screen-tracker" class="screen">
+  <h2 style="color:var(--gold);margin-bottom:20px">Score Tracker</h2>
+  <div class="stat-grid" id="stat-grid"></div>
+  <canvas id="score-chart"></canvas>
+  <div class="session-form">
+    <h3>Log a Session</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="form-group">
+        <label>Targets Shot</label>
+        <input type="number" id="f-targets" min="25" max="200" placeholder="125">
+      </div>
+      <div class="form-group">
+        <label>Hits</label>
+        <input type="number" id="f-hits" min="0" max="200" placeholder="95">
+      </div>
+      <div class="form-group">
+        <label>Stage</label>
+        <select id="f-stage">
+          <option>Practice</option>
+          <option>Club Comp</option>
+          <option>Regional</option>
+          <option>National</option>
+          <option>International</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>Notes (conditions, focus areas, etc.)</label>
+        <input type="text" id="f-notes" placeholder="Wind from right, worked on station 3 angles...">
+      </div>
+    </div>
+    <button class="btn-gold" onclick="logSession()">Log Session</button>
+  </div>
+  <div class="session-list" id="session-list"></div>
+</div>
+
+<!-- RULES -->
+<div id="screen-rules" class="screen">
+  <h2 style="color:var(--gold);margin-bottom:20px">Olympic Bunker Rules & Format</h2>
+  <div id="rules-content"></div>
+</div>
+
+<div id="toast">+XP Earned!</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let state = JSON.parse(localStorage.getItem('bunker_state') || 'null') || {
+  xp: 0,
+  completedDrills: {},
+  quizScores: {},
+  moduleProgress: {},
+  sessions: []
+};
+function saveState() { localStorage.setItem('bunker_state', JSON.stringify(state)); }
+
+const RANKS = [
+  { name: 'Novice', xp: 0 },
+  { name: 'Shooter', xp: 200 },
+  { name: 'Club Shooter', xp: 500 },
+  { name: 'Regional', xp: 1000 },
+  { name: 'National', xp: 2000 },
+  { name: 'International', xp: 3500 },
+  { name: 'Olympic', xp: 5000 },
+];
+function getRank() {
+  let r = RANKS[0];
+  for (let rank of RANKS) { if (state.xp >= rank.xp) r = rank; }
+  return r;
+}
+function getNextRank() {
+  const idx = RANKS.findIndex(r => r.name === getRank().name);
+  return RANKS[idx + 1] || null;
+}
+function updateXPBar() {
+  const rank = getRank();
+  const next = getNextRank();
+  document.getElementById('rank-name').textContent = rank.name;
+  document.getElementById('home-rank').textContent = rank.name;
+  document.getElementById('home-xp').textContent = state.xp;
+  if (next) {
+    const pct = ((state.xp - rank.xp) / (next.xp - rank.xp)) * 100;
+    document.getElementById('xp-fill').style.width = pct + '%';
+    document.getElementById('xp-label').textContent = `${rank.name} → ${next.name}`;
+  } else {
+    document.getElementById('xp-fill').style.width = '100%';
+    document.getElementById('xp-label').textContent = 'OLYMPIC ★';
+  }
+}
+function addXP(amount, label) {
+  state.xp += amount;
+  saveState();
+  updateXPBar();
+  showToast(`+${amount} XP — ${label}`);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULES DATA
+// ═══════════════════════════════════════════════════════
+const MODULES = [
+  {
+    id: 'intro',
+    icon: '🎯',
+    title: 'Discipline Overview',
+    desc: 'Understand what Olympic Bunker is, the layout, and what separates it from other shotgun sports.',
+    unlockAt: 0,
+    drills: 2,
+    quizLen: 5
+  },
+  {
+    id: 'stance',
+    icon: '🦶',
+    title: 'Stance & Setup',
+    desc: 'Foundation of every shot. Foot position, weight distribution, and body alignment.',
+    unlockAt: 0,
+    drills: 3,
+    quizLen: 4
+  },
+  {
+    id: 'mount',
+    icon: '🔫',
+    title: 'Gun Mount & Hold Point',
+    desc: 'Pre-mount technique, cheek weld, hold point selection per station.',
+    unlockAt: 100,
+    drills: 4,
+    quizLen: 5
+  },
+  {
+    id: 'visual',
+    icon: '👁️',
+    title: 'Visual System',
+    desc: 'Hard focus, soft focus, target acquisition speed and the visual "cone".',
+    unlockAt: 200,
+    drills: 3,
+    quizLen: 4
+  },
+  {
+    id: 'technique',
+    icon: '💥',
+    title: 'Shooting Technique',
+    desc: 'Swing, lead, trigger pull, follow-through — station by station breakdown.',
+    unlockAt: 400,
+    drills: 5,
+    quizLen: 6
+  },
+  {
+    id: 'angles',
+    icon: '📐',
+    title: 'Reading Targets & Angles',
+    desc: '15 target presentations per station. Learning to read and react to each angle.',
+    unlockAt: 700,
+    drills: 4,
+    quizLen: 5
+  },
+  {
+    id: 'mental',
+    icon: '🧠',
+    title: 'Mental Game',
+    desc: 'Pre-shot routine, reset after misses, competition pressure, and focus cues.',
+    unlockAt: 1000,
+    drills: 3,
+    quizLen: 4
+  },
+  {
+    id: 'competition',
+    icon: '🏆',
+    title: 'Competition Preparation',
+    desc: 'Warm-up protocol, equipment checks, squad management, and peak performance.',
+    unlockAt: 1800,
+    drills: 3,
+    quizLen: 5
+  }
+];
+
+// ═══════════════════════════════════════════════════════
+// LESSON CONTENT
+// ═══════════════════════════════════════════════════════
+const LESSON_CONTENT = {
+
+intro: {
+  learn: `
+    <h3 class="section">What is Olympic Bunker?</h3>
+    <p class="body">Olympic Bunker (also called Olympic Trap or Bunker Trap) is one of the three Olympic shotgun disciplines, alongside Skeet and Double Trap. It is widely considered the most technically demanding shotgun sport due to the speed, unpredictability, and variety of target presentations.</p>
+    <p class="body">Targets are launched from a bunker (trench) sunk into the ground in front of the shooting line. Each station has three machines capable of throwing targets at different horizontal angles and varying elevations. The shooter does not know which angle or height will be presented until the target is in flight.</p>
+    <div class="diagram">
+      <canvas id="c-field" width="480" height="200"></canvas>
+      <div class="diagram-label">Top view: 5 shooting stations, bunker with 15 machines (3 per station)</div>
+    </div>
+    <h3 class="section">The Field Layout</h3>
+    <ul class="checklist">
+      <li>5 shooting stations spaced 2.5m apart on a straight line</li>
+      <li>Bunker located 15m in front of the shooting line</li>
+      <li>15 machines in total — 3 assigned to each station</li>
+      <li>Targets travel a minimum of 76 meters from the bunker</li>
+      <li>Angles range from extreme left to extreme right (±45°) and varying elevation</li>
+    </ul>
+    <h3 class="section">Competition Format</h3>
+    <ul class="checklist">
+      <li>Qualification: 125 targets (5 rounds × 25 targets, rotating stations)</li>
+      <li>Each shooter fires at one target per station before the squad rotates</li>
+      <li>Semi-final: 50 targets (top 6 qualify)</li>
+      <li>Final: 50 targets with elimination rounds (top 6 shooters)</li>
+      <li>Scoring: 1 point per hit, 0 per miss — maximum 125 in qualification</li>
+    </ul>
+    <div class="tip-box"><strong>Coach's Note</strong>One key difference from American Trap: in Olympic Bunker you shoot ONE shot at a time at a fresh single — not two shots. Efficiency and certainty on the first shot is everything.</div>
+    <h3 class="section">What Makes it Hard</h3>
+    <p class="body">Unlike American Trap where angles are limited, Olympic Bunker machines throw targets up to 45° left or right and at varying heights. The combination of uncertainty, speed (targets move at ~100 km/h), and the requirement for a reliable first-shot kill makes this the pinnacle of clay target shooting.</p>
+    <div class="warn-box"><strong>Common Beginner Mistake</strong>Trying to aim at the target like a rifle. Olympic Bunker is a reactive sport — the gun must flow with the target, not stop on it.</div>
+  `,
+  drills: [
+    {
+      id: 'intro_d1',
+      title: 'Field Walk-Through',
+      difficulty: 'Beginner',
+      location: 'At the range',
+      time: '20 min',
+      desc: `Walk the full layout before ever shooting. Stand at each of the 5 stations. Face the bunker. Note the sight line down the field. Observe where targets land at each angle. Ask the trapper or club coach to throw a few unloaded to watch flight paths. Identify the far orange marker stakes — your reference for target distance. Build a spatial map of the field in your mind before your first live shot.`
+    },
+    {
+      id: 'intro_d2',
+      title: 'Machine Angle Observation',
+      difficulty: 'Beginner',
+      location: 'Viewing area',
+      time: '15 min',
+      desc: `Watch an experienced squad shoot a full round of 25. At each station, track whether each target goes left, center, or right. Notice the height variation. Count roughly how often extreme angles appear versus straight-ish angles. This builds your mental model of what randomization feels like and eliminates surprises on your first round.`
+    }
+  ],
+  quiz: [
+    { q: 'How many machines are in the bunker?', opts: ['5','10','15','25'], correct: 2, exp: '3 machines per station × 5 stations = 15 machines total.' },
+    { q: 'What is the minimum distance a target must travel from the bunker?', opts: ['50m','65m','76m','100m'], correct: 2, exp: 'ISSF rules specify 76 metres minimum target distance.' },
+    { q: 'How many targets are shot in Olympic Bunker qualification?', opts: ['75','100','125','150'], correct: 2, exp: '5 rounds × 25 targets = 125 targets in qualification.' },
+    { q: 'In Olympic Bunker, how many shots does each shooter get at each target?', opts: ['1','2','3','As many as needed'], correct: 0, exp: 'One shot per target. No second shot — first shot certainty is essential.' },
+    { q: 'How far apart are the 5 shooting stations?', opts: ['1m','2.5m','5m','10m'], correct: 1, exp: 'Stations are 2.5 metres apart under ISSF rules.' },
+  ]
+},
+
+stance: {
+  learn: `
+    <h3 class="section">Why Stance is Everything</h3>
+    <p class="body">Your stance is the platform for every shot. An inconsistent stance creates inconsistent results — no amount of gun fit, visual skill, or mental toughness compensates for a poor foundation. In Olympic Bunker, you need a stance that allows 90° of free lateral movement while maintaining a natural point of aim down the field centerline.</p>
+    <h3 class="section">Foot Position</h3>
+    <ul class="checklist">
+      <li>Feet shoulder-width apart — no wider, no narrower</li>
+      <li>Lead foot (left for right-handed) points toward the bunker at roughly 30–45°</li>
+      <li>Rear foot perpendicular or slightly angled rearward</li>
+      <li>Weight: 60–70% on the lead foot</li>
+      <li>Knees slightly bent — never locked</li>
+    </ul>
+    <div class="tip-box"><strong>Station Adjustment</strong>For stations 1 and 5, shift foot direction slightly toward the extreme angle side of your station. Station 1 shooters see many hard-left targets; your stance must accommodate that swing without hip restriction.</div>
+    <h3 class="section">Body Alignment</h3>
+    <p class="body">Your body should be "pre-loaded" slightly toward the expected center of travel. This does NOT mean aiming — it means positioning your skeletal structure so your natural point of aim is roughly center-field from your station. This reduces the amount of muscle you need to apply during the swing.</p>
+    <ul class="checklist">
+      <li>Hips square toward the bunker at start</li>
+      <li>Shoulders level — no drooping of the gun shoulder</li>
+      <li>Lean forward from the ankles — NOT the waist</li>
+      <li>Chin down, neck forward over the gun</li>
+      <li>Upper body leans ~5–10° forward — aggressive but balanced</li>
+    </ul>
+    <h3 class="section">Weight Transfer During the Swing</h3>
+    <p class="body">As you swing to an extreme angle, weight transfers slightly onto the front foot for outside targets and off-loads naturally for inside targets. Do NOT allow the rear heel to lift off the ground — this is a sign you're over-swinging and losing control.</p>
+    <div class="warn-box"><strong>Common Error: The Pivot Lean</strong>Many shooters lean laterally (sideways) rather than pivoting from the hip. If you find yourself losing cheek contact on wide angle targets, this is usually the cause. The gun comes to you — you do not reach for the gun.</div>
+    <h3 class="section">Station-by-Station Stance Notes</h3>
+    <ul class="checklist">
+      <li><strong>Station 1:</strong> Body angled right of center. Expect targets to go hard left — most challenging station.</li>
+      <li><strong>Station 2:</strong> Slight right bias. Many moderate left angles.</li>
+      <li><strong>Station 3:</strong> Center station. Most neutral stance. Angles are balanced left/right.</li>
+      <li><strong>Station 4:</strong> Slight left bias. Mirror of station 2.</li>
+      <li><strong>Station 5:</strong> Body angled left of center. Hard right targets dominate.</li>
+    </ul>
+  `,
+  drills: [
+    {
+      id: 'stance_d1',
+      title: 'Mirror Stance Check',
+      difficulty: 'Beginner',
+      location: 'At home',
+      time: '10 min',
+      desc: `Stand in front of a full-length mirror in your shooting stance WITHOUT a gun. Check: feet shoulder-width, weight forward, knees bent, shoulders level, chin forward. Swing left and right as if following targets. Watch that your rear heel stays down and your head stays level. Do 3 sets of 10 swings each direction. This builds proprioceptive memory of correct alignment without the distraction of a gun.`
+    },
+    {
+      id: 'stance_d2',
+      title: 'Tape Mark Drill',
+      difficulty: 'Beginner',
+      location: 'At range',
+      time: '15 min',
+      desc: `Use masking tape to mark your foot positions at each station before your first shot of each session. Photograph your tape marks. After the session, return to them and evaluate whether your feet drifted. Most shooters drift their rear foot back over a round — this shortens swing range. Do this for 10 sessions until foot placement is automatic.`
+    },
+    {
+      id: 'stance_d3',
+      title: 'Dry-Swing Boundary Test',
+      difficulty: 'Intermediate',
+      location: 'Range / home',
+      time: '10 min',
+      desc: `Unloaded gun only. Take your stance at station 1. Swing the gun to the most extreme left angle you can reach while keeping: (1) cheek on stock, (2) rear heel down, (3) front sight aligned. Mark where your maximum natural swing ends. Now swing right to the extreme. If you cannot reach the boundary angles with clean form, you have a stance restriction — adjust foot angle and repeat until both extremes are accessible without strain.`
+    }
+  ],
+  quiz: [
+    { q: 'Where should the majority of your body weight sit in the Olympic Bunker stance?', opts: ['Equally distributed','60-70% on the lead foot','Entirely on the rear foot','On the heels'], correct: 1, exp: 'Lead foot carries 60–70% of weight, giving a forward athletic base.' },
+    { q: 'Which of these is a sign that you are over-swinging on wide angle targets?', opts: ['Eyes blinking','Rear heel lifting off the ground','Gun mount loosening','Both feet lifting'], correct: 1, exp: 'Rear heel lift indicates you have reached your rotational limit and are compensating — adjust stance width and direction.' },
+    { q: 'At station 1, how should your body be oriented?', opts: ['Directly at the bunker center','Angled right of center to accommodate hard left targets','Angled left of center','Exactly like all other stations'], correct: 1, exp: 'Station 1 expects many hard-left targets. Pre-loading toward the right means your swing to the left is within natural range.' },
+    { q: 'Where should the forward lean in your stance originate?', opts: ['From the waist','From the neck','From the ankles','There should be no lean'], correct: 2, exp: 'Lean from the ankles keeps the spine neutral and enables full rotation. Waist-leaning breaks posture and restricts the swing.' },
+  ]
+},
+
+mount: {
+  learn: `
+    <h3 class="section">Pre-Mount vs. Mounted Start</h3>
+    <p class="body">Olympic Bunker uses the <strong>pre-mount</strong> style: the gun is mounted to the shoulder and cheek before the target is called. The shooter calls "Pull" with the gun already fully mounted. This differs from Sporting Clays and some other disciplines where the mount happens after target launch.</p>
+    <p class="body">Because the gun is already mounted, your preparation time is entirely devoted to visual readiness — getting your eyes to the right place, at the right focus, at the right moment.</p>
+    <h3 class="section">The Mount Itself</h3>
+    <ul class="checklist">
+      <li>Bring the stock firmly to the cheek first, then the shoulder meets the gun</li>
+      <li>Cheek pressure: firm, repeatable — like a weld, not a rest</li>
+      <li>Comb contact point must be identical every single mount</li>
+      <li>Shoulder pocket: the gun nestles in the hollow below the collarbone — never on the arm</li>
+      <li>Grip: firm but not white-knuckle — the trigger hand squeezes, the fore-end hand guides</li>
+      <li>Elbows: lead elbow up (45°+) to create the shoulder pocket; trigger elbow slightly down</li>
+    </ul>
+    <div class="tip-box"><strong>The Cheek Weld Rule</strong>Every miss that cannot be explained by swing or visual error should be traced back to the cheek weld first. Inconsistent mounting is the single largest source of unexplained misses in developing shooters.</div>
+    <h3 class="section">Hold Point Selection</h3>
+    <p class="body">Your hold point is where the muzzle sits when you call for the target. It is NOT where you intend to shoot — it is the starting position for your reactive swing. Getting the hold point right reduces reaction time and builds consistent leads.</p>
+    <ul class="checklist">
+      <li><strong>Height:</strong> Muzzle sits 1–2m above the bunker wall — never higher. The target must appear below your muzzle, not above it.</li>
+      <li><strong>Lateral position:</strong> Roughly center of your station's three machine arc</li>
+      <li><strong>Station 1:</strong> Hold slightly right of center to avoid masking left targets</li>
+      <li><strong>Station 5:</strong> Hold slightly left of center for the same reason</li>
+      <li><strong>Station 3:</strong> Dead center hold works well due to balanced angles</li>
+    </ul>
+    <div class="warn-box"><strong>Hold Point Too High</strong>If your muzzle is above the target line at call, you must swing DOWN and then across — this double movement destroys timing. Lower your hold point until targets always appear below the muzzle.</div>
+    <h3 class="section">The Call Sequence</h3>
+    <p class="body">Every call should follow the same sequence, every time. Pre-shot routine is covered in detail in the Mental Game module, but from a technical standpoint:</p>
+    <ul class="checklist">
+      <li>Stance confirmed → gun mounted → hold point set → eyes hard focused on the traphouse window → CALL</li>
+      <li>From call to shot: typically 0.8–1.2 seconds for elite shooters</li>
+      <li>Do not call until your eyes are ready — the machine will wait; your focus cannot be rushed</li>
+    </ul>
+  `,
+  drills: [
+    {
+      id: 'mount_d1',
+      title: 'Dry Mount Count',
+      difficulty: 'Beginner',
+      location: 'At home',
+      time: '15 min',
+      desc: `50 dry mounts per session, minimum. Mount the gun, check cheek weld by looking straight without moving, check shoulder pocket, dismount, repeat. Use a mirror or phone camera to record 10 consecutive mounts. Watch back for any variation in cheek contact height. Target: zero visible variation in 10 consecutive mounts. Do this daily for 2 weeks before live fire.`
+    },
+    {
+      id: 'mount_d2',
+      title: 'Lipstick Cheek Test',
+      difficulty: 'Beginner',
+      location: 'At home',
+      time: '10 min',
+      desc: `Apply a small amount of lipstick or chalk to your cheekbone. Mount the gun 10 times without looking between mounts. Examine the mark on the stock comb — it must be in the same location each time. If marks scatter, you have an inconsistent cheek weld. Identify whether the gun is moving to you or you to the gun — it should always be gun to face, not face to gun.`
+    },
+    {
+      id: 'mount_d3',
+      title: 'Hold Point Mapping',
+      difficulty: 'Intermediate',
+      location: 'At range',
+      time: '30 min',
+      desc: `At the range WITHOUT shooting, stand at each station and mount the gun. Close your eyes. Open them — check where your muzzle is pointing. Is it above the trap house? Is it to the right or left of the bunker center? Adjust your stance and hold until opening your eyes finds the muzzle exactly at your target hold point. Repeat 5 times per station. Write down your foot position and body angle that produces the correct natural hold at each station.`
+    },
+    {
+      id: 'mount_d4',
+      title: 'Video Mount Review',
+      difficulty: 'Intermediate',
+      location: 'At range',
+      time: '1 session',
+      desc: `Ask a training partner to film you from the side and from behind during a live session. Review footage looking for: (1) head dropping to meet stock vs stock rising to cheek, (2) gun creeping forward before mount is solid, (3) elbow position variation, (4) shoulder rolling rather than presenting a pocket. Identify your single biggest fault and write a one-sentence cue to correct it.`
+    }
+  ],
+  quiz: [
+    { q: 'In Olympic Bunker, when is the gun mounted relative to calling for the target?', opts: ['Just before the target appears','After calling and seeing the target','Before calling — gun is pre-mounted','Simultaneously with the call'], correct: 2, exp: 'Pre-mount discipline: gun is fully mounted before calling "Pull". This frees the shooter to focus entirely on visual target acquisition.' },
+    { q: 'What does an overly high hold point cause?', opts: ['The muzzle to mask the target','A double movement: down then across','Loss of cheek weld','All of the above'], correct: 3, exp: 'High hold causes target masking (you cannot see the target emerge), forces a drop-then-swing movement that destroys timing, and the awkward position compromises cheek weld.' },
+    { q: 'Which comes first in a correct gun mount?', opts: ['Shoulder pocket engagement','Cheek to stock contact','Trigger finger placement','Looking at the bunker'], correct: 1, exp: 'Cheek to stock first — the shoulder then meets the gun. This sequence ensures consistent head position drives everything else.' },
+    { q: 'At station 5, where should the hold point lean laterally?', opts: ['Right of center','Left of center','Dead center','It does not matter'], correct: 1, exp: 'Station 5 sees many hard-right targets. Holding left of center prevents masking right-angle targets as they emerge.' },
+    { q: 'What is the ideal lead elbow angle during the mount?', opts: ['Pointing straight down','45 degrees or higher, creating a shoulder pocket','Tucked tightly to the body','Level with the shoulder'], correct: 1, exp: 'Lead elbow raised to 45°+ creates the proper shoulder pocket for recoil absorption and consistent stock placement.' },
+  ]
+},
+
+visual: {
+  learn: `
+    <h3 class="section">The Visual System is the Shot</h3>
+    <p class="body">More than any other discipline, Olympic Bunker is won or lost in the visual system. You have approximately 0.3 seconds from target emergence to reading enough information to commit your swing. The difference between a hit and a miss is often not the trigger pull — it is where your eyes were and what they were focused on.</p>
+    <h3 class="section">Hard Focus vs. Soft Focus</h3>
+    <p class="body"><strong>Soft focus</strong> is a wide, relaxed gaze across the trap house window. You are not looking at a specific point — you are looking AT the window as a wide zone. This is your state between shots and as you call for the target.</p>
+    <p class="body"><strong>Hard focus</strong> is the instant the target emerges — your eyes lock on to the front edge of the clay. Not the back, not the middle — the leading edge. This is what enables you to read angle, speed, and height in the first 20 meters of flight.</p>
+    <div class="tip-box"><strong>Coach's Rule</strong>If you are looking at the muzzle when you fire, you will miss behind almost every time. The gun lives in your peripheral vision. The target lives in your fovea.</div>
+    <h3 class="section">The Visual Cone</h3>
+    <p class="body">Think of your gaze as a cone originating from your eyes. At soft focus, the cone is wide — covering the entire trap house window. When the target appears, the cone narrows instantly and locks onto the clay. Your job is to transition from wide cone to narrow cone in under 0.2 seconds.</p>
+    <ul class="checklist">
+      <li>Soft focus: broad awareness, no tension in the eyes</li>
+      <li>Target emerges: cone narrows, hard lock on leading edge</li>
+      <li>Swing begins: eyes pull the gun — the muzzle follows your focus</li>
+      <li>Through shot: eyes stay ahead of the target, never stop</li>
+    </ul>
+    <h3 class="section">The Look Zone</h3>
+    <p class="body">The look zone is where you direct your soft focus before calling. It is NOT the trap house itself — it is approximately 5–8 meters in front of the bunker, at about trap height. This is where the target will become readable.</p>
+    <ul class="checklist">
+      <li>Look too close (at the trap house slit): target exits too fast, reaction is scrambled</li>
+      <li>Look too far: target has already established its angle before you pick it up — always playing catch-up</li>
+      <li>Optimal look zone: 5–8m in front of bunker, just above trap height</li>
+    </ul>
+    <div class="warn-box"><strong>Visual Fatigue</strong>Elite shooters monitor visual fatigue closely. In a 125-target qualification, maintaining hard focus on every target is exhausting. Blinking deliberately between shots and practicing "soft reset" gazes between presentations prevents the glazed unfocused state that causes runs of misses late in a round.</div>
+    <h3 class="section">Reading the Target in Flight</h3>
+    <p class="body">Within the first 10–15 meters, a skilled shooter reads: (1) horizontal angle, (2) elevation, (3) speed. This reading happens below the conscious level once trained — it becomes instinct. Early in your development, name what you see: "hard left, rising" or "straight, flat" — this builds neural encoding of target types.</p>
+  `,
+  drills: [
+    {
+      id: 'visual_d1',
+      title: 'Observation Round',
+      difficulty: 'Beginner',
+      location: 'Range',
+      time: '1 round',
+      desc: `Shoot a full round (25 targets) focused entirely on one thing: seeing the front edge of the clay as quickly as possible after emergence. Do not think about your swing or lead. If you miss, say "didn't see it" or "saw it late" out loud. This decompresses shooting from technique and trains the brain to prioritize visual acquisition. Score is irrelevant — speed of visual pickup is the only metric.`
+    },
+    {
+      id: 'visual_d2',
+      title: 'Look Zone Calibration',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '15 min',
+      desc: `Stand at station 3. Without shooting, call for targets and practice picking up the target in the look zone 5–8m from the bunker. If you feel like you are reacting rather than reading, your look zone is too close. If targets seem to arrive already moving fast and committed, you are looking too far. Adjust until you feel you can name the angle (left/straight/right) within the first 5 meters of flight. Do this for 10–15 targets before live fire.`
+    },
+    {
+      id: 'visual_d3',
+      title: 'Muzzle Blur Check',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '1 session',
+      desc: `During a live session, with a training partner watching, have them call out "bead" every time they observe your eyes flicking to the muzzle bead or barrel. Count tallies per round. Elite shooters have 0–2 muzzle checks per 25 targets. More than 5 indicates a checking habit that destroys leads. Drill fix: mentally say "orange" (the target color) from emergence through follow-through to keep visual commitment locked on the clay.`
+    }
+  ],
+  quiz: [
+    { q: 'What is "hard focus" in Olympic Bunker?', opts: ['Looking at the gun barrel','Looking at the leading edge of the clay','Staring intensely at the trap house','Focusing on a point 50m downrange'], correct: 1, exp: 'Hard focus locks on the front (leading) edge of the clay as soon as it emerges. This gives maximum angle and speed reading information.' },
+    { q: 'Where is the optimal look zone before calling?', opts: ['At the trap house slit','15–20m in front of bunker','5–8m in front of bunker at trap height','On the far horizon'], correct: 2, exp: '5–8m in front of the bunker gives optimal time to read the target angle without the disorienting speed of a target emerging right from the house.' },
+    { q: 'What is "soft focus" used for?', opts: ['Aiming precisely at the bunker','A relaxed wide-field gaze before and between shots','Looking at a distant reference point','Checking the gun barrel is aligned'], correct: 1, exp: 'Soft focus is a wide, relaxed gaze over the trap house zone. It keeps the visual system fresh and ready to pick up any angle the target takes.' },
+    { q: 'What does a muzzle-checking habit typically cause?', opts: ['Better accuracy','Missing behind the target','Missing in front of the target','No effect on accuracy'], correct: 1, exp: 'When eyes drop to the muzzle mid-shot, the gun decelerates or stops swinging. The target overtakes the pattern — misses happen behind.' },
+  ]
+},
+
+technique: {
+  learn: `
+    <h3 class="section">The Mechanics of a Kill Shot</h3>
+    <p class="body">Olympic Bunker technique is built on a simple principle: the gun must always be accelerating through the target. A stopped or decelerating gun pattern passes behind fast-moving clays. Every component of technique — swing, lead, trigger, follow-through — serves this one idea.</p>
+    <h3 class="section">The Swing</h3>
+    <p class="body">Olympic Bunker uses a <strong>maintained lead</strong> or <strong>swing-through</strong> approach depending on the shooter and coach. The majority of elite coaches teach <strong>swing-through from behind</strong> — starting the muzzle behind the target, accelerating through it, and pulling the trigger as the muzzle overtakes the target and builds lead.</p>
+    <ul class="checklist">
+      <li>Eyes pick up target → body starts rotating immediately</li>
+      <li>Gun moves from hold point toward target, picking up the line</li>
+      <li>Muzzle comes from behind the target and accelerates through</li>
+      <li>Trigger fires as lead develops — not a conscious measurement</li>
+      <li>Follow-through continues the swing 30cm past the break point</li>
+    </ul>
+    <div class="tip-box"><strong>Lead is a Feeling, Not a Calculation</strong>You cannot consciously calculate lead at 100 km/h. Elite shooters develop an instinctive feel for "enough lead" through repetition. Early training should focus on timing (swinging through) rather than measuring barrel gaps.</div>
+    <h3 class="section">The Trigger Pull</h3>
+    <p class="body">The trigger should be a subconscious response to visual confirmation — "I see the right picture, the finger fires." Not: "I think I have enough lead so I will now press the trigger." That cognitive loop adds 0.3 seconds and means you are decelerating as you shoot.</p>
+    <ul class="checklist">
+      <li>Trigger finger rests in natural position — never forced</li>
+      <li>Pull is a smooth, increasing pressure — no jab or snatch</li>
+      <li>Fire decision is visual, not calculated</li>
+      <li>Second trigger (if gun is an O/U) is never used in Olympic Bunker — one shot per target</li>
+    </ul>
+    <h3 class="section">Station-by-Station Technique Notes</h3>
+    <ul class="checklist">
+      <li><strong>Station 1:</strong> Hard left angles require the fastest swing of any station. Weight must transfer aggressively to front foot. Never rush the call — but commit instantly once target is read.</li>
+      <li><strong>Station 2:</strong> Moderate angles dominate. Develop trust in the swing — this station rewards smooth mechanics.</li>
+      <li><strong>Station 3:</strong> Center station. Straight targets can be deceptively fast — do not hold back on follow-through for "easy" straights.</li>
+      <li><strong>Station 4:</strong> Mirror of station 2. Key fault here: over-compensating for right angles and getting lazy on left presentations.</li>
+      <li><strong>Station 5:</strong> Hard right angles. Same demands as station 1, mirrored. Right-handed shooters often find hard rights at station 5 more difficult because the natural shoulder rotation works against them.</li>
+    </ul>
+    <h3 class="section">Follow-Through</h3>
+    <p class="body">Follow-through is not optional. It is what prevents the gun from stopping at the moment of trigger pull. The brain's natural tendency after committing to the shot is to stop moving — follow-through overrides this. Keep swinging hard for 30 cm past where the target breaks. If you feel the gun stop at the trigger pull, your follow-through is gone.</p>
+    <div class="warn-box"><strong>Stopping on the Bird</strong>The most common miss in the sport. The shooter "aims" at the target — the swing stops — the trigger fires — the bird flies through the pattern. Always swing through, never stop on it.</div>
+  `,
+  drills: [
+    {
+      id: 'tech_d1',
+      title: 'Straight Target Drill',
+      difficulty: 'Beginner',
+      location: 'Range',
+      time: '25 targets',
+      desc: `Ask the trapper to throw ONLY straight (center machine) targets for a session. Station 3. Focus exclusively on swing-through mechanics — picking up the line, accelerating through, and completing follow-through past the bird. No worry about angle — just build the fundamental swing motion at the simplest target type. Score must be 22/25 or better before moving to angled targets.`
+    },
+    {
+      id: 'tech_d2',
+      title: 'The Stop-Check Drill',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '1 session',
+      desc: `After each shot, freeze your gun position immediately. Check: is the muzzle still moving or has it stopped? Ask your coach or partner to observe. If the muzzle stops consistently at or before the break point, you have a follow-through fault. Fix: deliberately swing until you physically cannot see the target (it's smashed or gone). Do not release the swing until it has been killed or clearly missed.`
+    },
+    {
+      id: 'tech_d3',
+      title: 'Station 1 Hard-Left Protocol',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '50 targets',
+      desc: `Station 1 only. Ask for random targets but focus when hard lefts appear. Use a training partner to tally hard-left hits vs misses. On misses, identify pattern: (1) stopped swing — remedy is more aggressive weight transfer; (2) shot too late — remedy is calling quicker once angle is read; (3) behind — remedy is more swing-through momentum. 50 targets at station 1 builds more skill than 10 rounds of standard rotation.`
+    },
+    {
+      id: 'tech_d4',
+      title: 'No-Look Follow-Through',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '25 targets',
+      desc: `After each shot, keep the gun moving and look for the debris of the clay AHEAD of where you shot. If you are breaking targets correctly, the debris should appear in front of the muzzle after the shot — it was killed while moving away. If debris appears at or behind the muzzle point, you are catching up to the target rather than swinging through it. Adjust lead timing until debris appears consistently ahead of your finish point.`
+    },
+    {
+      id: 'tech_d5',
+      title: 'Cross-Station Angle Ladder',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '2 sessions',
+      desc: `Session 1: Shoot 25 targets from station 1 focusing only on left-angle targets (tell the scorer you want a note of your left vs right performance). Session 2: Station 5, right-angle focus. Compare scores. Your weakest angle direction at the extreme stations reveals whether you have a rotation restriction (addressed by stance work) or a visual delay (addressed by look zone work). Identify and address root cause before next session.`
+    }
+  ],
+  quiz: [
+    { q: 'What swing method do most elite Olympic Bunker coaches teach?', opts: ['Stop-and-shoot (snap shooting)','Sustained lead from front','Swing-through from behind','Random based on target angle'], correct: 2, exp: 'Swing-through from behind: start behind the target, accelerate through it, fire as the lead develops. This prevents stopping on the bird.' },
+    { q: 'What does "stopping on the bird" cause?', opts: ['A clean break just behind the target','The pattern to pass in front of the target','The pattern to pass behind the target','No effect — it is a myth'], correct: 2, exp: 'If the gun stops at trigger pull, the shot column passes behind the still-moving target. This is the most common miss type in the sport.' },
+    { q: 'When should the brain consciously "decide" to pull the trigger?', opts: ['When a measured 3-foot lead is visible','When the gun stops moving','As a subconscious response to the correct visual picture','After a 1-second count from emergence'], correct: 2, exp: 'Trigger pull must be a reflexive visual response, not a calculated decision. Conscious measurement creates hesitation and deceleration.' },
+    { q: 'Which shooters typically find hard-right targets at station 5 most difficult?', opts: ['Left-handed shooters','Right-handed shooters','Both equally','Only beginners'], correct: 1, exp: 'Right-handed shooters must rotate their body in a direction that works against their dominant shoulder, making hard-right angles at station 5 mechanically demanding.' },
+    { q: 'How far should follow-through continue after the trigger breaks?', opts: ['Stop immediately','5cm','30cm past the break point','Until the clay lands'], correct: 2, exp: '30 centimetres of continued swing after the break point is the standard cue for complete follow-through. This prevents the brain\'s natural tendency to stop the swing at trigger pull.' },
+    { q: 'What is the role of the lead foot during a hard-left swing at station 1?', opts: ['It stays neutral','Weight transfers aggressively onto it','It lifts off the ground slightly','It pivots backward'], correct: 1, exp: 'Aggressive weight transfer onto the lead foot is required for maximum rotation range on hard-left angles at station 1.' },
+  ]
+},
+
+angles: {
+  learn: `
+    <h3 class="section">The 15-Machine System</h3>
+    <p class="body">Each station has 3 machines programmed to throw specific angles. The exact settings vary by club and competition, but the ISSF defines angle ranges. Understanding the probability distribution at each station — which machines throw which way — helps you prepare your body before calling, even though you cannot know which specific machine will fire.</p>
+    <div class="tip-box"><strong>Key Insight</strong>You cannot predict which machine will fire, but you CAN know: (1) the range of angles possible from your station, (2) which angles are statistically more frequent, (3) how to classify a target within its first 5 meters of flight. This knowledge converts uncertainty into informed reaction.</div>
+    <h3 class="section">The Three Angle Categories</h3>
+    <ul class="checklist">
+      <li><strong>Going Away (Straight):</strong> Target angles within ~15° of center. These appear to accelerate straight away. The most common miss is behind — treat these as fast, not easy.</li>
+      <li><strong>Going Out (Moderate Angle):</strong> 15–35° horizontal. These are the "bread and butter" targets. Most of your rounds will be dominated by these.</li>
+      <li><strong>Extreme Angle:</strong> 35–45°. These require maximum rotation and the most decisive commitment. Hesitation on extreme angles almost always results in a miss.</li>
+    </ul>
+    <h3 class="section">Reading Elevation</h3>
+    <p class="body">Targets also vary in height. A rising target needs the gun to swing both laterally AND upward. A flat or dropping target requires horizontal tracking only. Reading elevation in the first 5 meters is the key skill.</p>
+    <ul class="checklist">
+      <li><strong>Rising target:</strong> Lead gun upward AND forward — the target is climbing away from you</li>
+      <li><strong>Flat target:</strong> Pure horizontal swing — most forgiving elevation-wise</li>
+      <li><strong>Low fast target:</strong> Gun often needs to swing below the horizon — can surprise even experienced shooters</li>
+    </ul>
+    <h3 class="section">The "First 5 Meters" Rule</h3>
+    <p class="body">All target classification must happen within the first 5 meters of flight. By 10 meters, your swing must be committed. At 15 meters, the trigger should fire. If you are still reading the target at 20+ meters, you are behind and will rush — rushing causes missed triggers, checked swings, and most of your misses will happen in clusters.</p>
+    <h3 class="section">Naming Targets in Training</h3>
+    <p class="body">As a development tool, name every target out loud immediately after it emerges: "hard left rising" — "straight flat" — "right moderate." Do this for 10 rounds. It forces rapid conscious classification which accelerates the neural pathway that eventually becomes unconscious rapid reaction. Top coaches call this building the "target library."</p>
+    <div class="warn-box"><strong>The Deceptive Straight</strong>Straight targets at station 3 appear slow but are actually among the fastest presentations in terms of time-to-miss-range. Shooters who treat straights as "easy" often have higher miss rates on station 3 than station 1. Maintain full swing commitment on every straight target.</div>
+  `,
+  drills: [
+    {
+      id: 'angles_d1',
+      title: 'Target Library Builder',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '2 sessions',
+      desc: `Two rounds of 25. After EVERY target, call out (out loud): angle direction (left/straight/right), estimated angle intensity (soft/moderate/hard), and elevation (rising/flat/low). Have a partner tally how quickly you name it — "before 10m" or "after 10m." Goal: 90% of classifications happening before 10m by end of session 2. This builds the target library that underpins automatic reaction at competition pace.`
+    },
+    {
+      id: 'angles_d2',
+      title: 'Extreme Angle Commitment Drill',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '25 targets',
+      desc: `Station 1 and station 5 only, alternating. When an extreme angle appears, say the word "GO" out loud as you commit to the swing. This verbal cue prevents the hesitation reflex that causes shooters to start the swing then check it when the angle looks severe. Data shows shooters who hesitate on extreme angles miss 60%+ of them. The drill trains decisive commitment as a conditioned response to reading a wide angle.`
+    },
+    {
+      id: 'angles_d3',
+      title: 'Elevation Focus Round',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '25 targets',
+      desc: `Call targets but focus ONLY on reading elevation in the first 5m. Ignore everything else — angle, lead, score. Say "rising," "flat," or "low" immediately after emergence. Have partner note your accuracy of elevation call vs actual target behavior. This isolates vertical target reading, which is often underdeveloped compared to horizontal angle reading.`
+    },
+    {
+      id: 'angles_d4',
+      title: 'Station 3 Straight Destruction',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '25 targets',
+      desc: `Station 3 only, center machine only (ask trapper). 25 straight targets. Focus: prove to yourself that straight is NOT easy. Deliberately swing harder and faster than feels necessary. Count misses. If you miss more than 3, your "easy" target has a mechanical fault — usually a stopped swing. Review follow-through protocol and retry.`
+    }
+  ],
+  quiz: [
+    { q: 'By how many meters into flight should target classification be complete?', opts: ['5 meters','15 meters','25 meters','Before the shot only'], correct: 0, exp: 'Classification (angle, elevation, speed read) must happen within 5 metres. By 10 metres the swing must be committed.' },
+    { q: 'What is the most common miss type on straight targets at station 3?', opts: ['In front (too much lead)','Above the target line','Behind (insufficient swing-through)','Left of target'], correct: 2, exp: 'Straight targets are treated as easy, so shooters reduce follow-through effort — the gun slows and the pattern passes behind the fast-moving target.' },
+    { q: 'How should a rising target be tracked?', opts: ['Purely horizontal swing','Purely vertical — no lateral movement','Both lateral and upward swing simultaneously','Stop the gun and let the target enter the pattern'], correct: 2, exp: 'Rising targets require the gun to track both the horizontal angle AND the climbing elevation simultaneously — a compound swing direction.' },
+    { q: 'What does "building a target library" mean?', opts: ['Memorizing machine settings','Naming target presentations to build automatic recognition pathways','Creating a written log of every target','Filing competition records'], correct: 1, exp: 'Naming targets forces rapid conscious classification which builds neural pathways. Over hundreds of repetitions, this becomes automatic pattern recognition — the target library.' },
+    { q: 'What is the approximate angular range for an "extreme angle" presentation?', opts: ['0–15°','15–35°','35–45°','Over 60°'], correct: 2, exp: 'Extreme angle targets range from 35° to 45° horizontal. These require maximum body rotation and the most decisive swing commitment.' },
+  ]
+},
+
+mental: {
+  learn: `
+    <h3 class="section">The Mental Game is a Skill</h3>
+    <p class="body">Every shooter eventually reaches a ceiling where technique is sufficient to shoot very high scores in training but performance drops in competition. This ceiling is mental, not physical. The mental game — pre-shot routine, pressure management, reset protocols, and focus cues — is trainable and is as important as any physical skill.</p>
+    <h3 class="section">Pre-Shot Routine</h3>
+    <p class="body">The pre-shot routine is a repeatable sequence of physical and mental actions you perform before every single call. Its purpose is to bring you to a consistent physiological and psychological state — the same state that produces great shots in training.</p>
+    <ul class="checklist">
+      <li><strong>Step to station:</strong> physical deliberateness — set feet, not rushed</li>
+      <li><strong>Cartridge(s) loaded:</strong> action closed, safety confirmed</li>
+      <li><strong>Stance check:</strong> weight confirmed, knees bent</li>
+      <li><strong>Mount:</strong> gun to cheek, hold point set</li>
+      <li><strong>Breath:</strong> exhale 60%, let breath settle</li>
+      <li><strong>Eyes:</strong> move to look zone, achieve soft focus on trap window</li>
+      <li><strong>Cue word (optional):</strong> one word trigger — "smooth", "orange", "through"</li>
+      <li><strong>CALL</strong></li>
+    </ul>
+    <div class="tip-box"><strong>Timing Your Routine</strong>Elite shooters' pre-shot routines typically run 4–8 seconds. Too fast = physical shortcuts. Too slow = overthinking and eye fatigue. Time yours in training. Find your natural tempo and protect it in competition.</div>
+    <h3 class="section">Resetting After a Miss</h3>
+    <p class="body">What you do in the 3 seconds after a miss determines whether it becomes one miss or a run of misses. High performers have a defined reset protocol. Low performers react emotionally — and the next shot pays for it.</p>
+    <ul class="checklist">
+      <li>Immediate acknowledgement: "miss" — no emotion, just fact</li>
+      <li>One breath — exhale and release any physical tension</li>
+      <li>Identify cause in ONE word: "stopped" / "behind" / "visual" — nothing more</li>
+      <li>Apply fix in ONE word: "through" / "faster" / "orange"</li>
+      <li>Return to routine — EXACTLY as normal</li>
+    </ul>
+    <div class="warn-box"><strong>The Two-Miss Rule</strong>Two consecutive misses are a psychological event, not just a technical one. After a second consecutive miss, slow down your routine deliberately — not to add more thinking, but to break the panic rhythm and re-establish physical steadiness before calling again.</div>
+    <h3 class="section">Competition Focus Cues</h3>
+    <p class="body">A focus cue is a single word or phrase that returns you to the correct performance state. Every elite shooter has one. Common examples: "orange" (keep eyes on target color), "through" (follow-through reminder), "smooth" (trigger and swing quality), "NOW" (decisive commitment trigger).</p>
+    <p class="body">Your cue must be tested in high-pressure training scenarios before competition. A cue that works in easy practice but fails under pressure is useless.</p>
+    <h3 class="section">Managing Competition Pressure</h3>
+    <ul class="checklist">
+      <li>Score board avoidance: stop checking the scoreboard mid-round. You cannot control anyone else's score.</li>
+      <li>Target focus: the only relevant entity in your world is the next target. One at a time.</li>
+      <li>Breathing protocol: use box breathing (4 counts in, 4 hold, 4 out) between stations</li>
+      <li>Physical release: roll shoulders, shake hands loose between stations to prevent muscle tension accumulation</li>
+    </ul>
+  `,
+  drills: [
+    {
+      id: 'mental_d1',
+      title: 'Routine Timing Drill',
+      difficulty: 'Beginner',
+      location: 'Range',
+      time: '1 session',
+      desc: `Have a partner time every one of your pre-shot routines for a full round of 25. Record times. Calculate average and range (fastest to slowest). Your target: all routines within 1 second of your average time. High variance means your routine is inconsistent — usually emotion-driven variation that peaks after misses. Do 3 rounds timing your routine before building it into unconscious habit.`
+    },
+    {
+      id: 'mental_d2',
+      title: 'Pressure Simulation Drill',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '1 session',
+      desc: `Create artificial stakes: bet your training partner a coffee/forfeit on your score. Or shoot the last 10 targets of a practice round as if they are a final with a score to beat. Deliberately create the conditions where missing matters. Then apply your reset protocol when misses occur. The goal is to test and calibrate your mental tools under simulated pressure before real competition. Log: did your reset protocol work? What needed adjusting?`
+    },
+    {
+      id: 'mental_d3',
+      title: 'Box Breathing Protocol',
+      difficulty: 'Beginner',
+      location: 'Anywhere',
+      time: '5 min daily',
+      desc: `Practice box breathing daily: 4 counts inhale through nose, 4 counts hold, 4 counts exhale through mouth, 4 counts hold. Do 8 cycles. This activates the parasympathetic nervous system — the opposite of competition stress. By practicing daily, you build the ability to reach this calm state on demand. At competition, use 1 cycle between stations to reset heart rate and muscular tension.`
+    }
+  ],
+  quiz: [
+    { q: 'What is the purpose of a pre-shot routine?', opts: ['To take as much time as the rules allow','To produce a consistent physiological and psychological state before every shot','To check all equipment is legal','To signal readiness to the referee'], correct: 1, exp: 'The routine\'s purpose is state management — delivering the same internal conditions before every call, whether it is shot 1 or shot 125.' },
+    { q: 'How should a shooter respond to a miss in the first 3 seconds?', opts: ['Analyze it in detail before the next shot','Show frustration to release tension','Acknowledge it, identify cause in one word, apply one-word fix, return to routine','Ignore it and move on immediately'], correct: 2, exp: 'The defined three-step reset: acknowledge (fact, no emotion) → one-word diagnosis → one-word fix → return to routine exactly.' },
+    { q: 'What does a focus cue do?', opts: ['Reminds you of the rules','Returns you to the correct performance state when called','Is used only before the first target of a round','Tells the trapper you are ready'], correct: 1, exp: 'A focus cue is a trained single word that acts as a psychological anchor — pulling your attention back to the correct performance state when pressure or distraction occurs.' },
+    { q: 'What typically causes high variance in pre-shot routine timing?', opts: ['Weather conditions','Equipment differences','Emotion-driven variation, peaking after misses','Different station distances'], correct: 2, exp: 'Emotional responses to misses rush or slow the routine. High timing variance almost always maps directly to performance on the shots following misses.' },
+  ]
+},
+
+competition: {
+  learn: `
+    <h3 class="section">Preparing to Compete</h3>
+    <p class="body">Competition performance is the product of preparation, not inspiration. The week before, the day before, and the morning of a competition all have structured protocols that protect your performance from logistical stress, physical fatigue, and equipment surprises.</p>
+    <h3 class="section">Week Before Competition</h3>
+    <ul class="checklist">
+      <li>Reduce training volume by 30% — maintain quality, reduce quantity</li>
+      <li>One quality session of 50 targets: 25 technical review, 25 competition simulation</li>
+      <li>Check all equipment: gun serviced, two sets of shells (same lot if possible), ear/eye pro working</li>
+      <li>Confirm travel, venue arrival time, squad time</li>
+      <li>Sleep: prioritize 7–8 hours per night all week</li>
+    </ul>
+    <h3 class="section">Competition Morning Protocol</h3>
+    <ul class="checklist">
+      <li>Wake minimum 2 hours before squad time</li>
+      <li>Light meal: carbohydrates + protein, avoid heavy fats</li>
+      <li>Arrive venue 45–60 minutes before your squad time</li>
+      <li>Equipment check: shells loaded and counted, gun clean and cycling</li>
+      <li>Warm-up: 15–20 dry mounts, visual soft-focus exercises, one breathing cycle</li>
+      <li>Walk the stations: check lighting conditions, wind direction, background</li>
+      <li>Mental review of your one focus cue for the round</li>
+    </ul>
+    <div class="tip-box"><strong>Background and Light</strong>Always assess the background and light conditions before your round. A dark wooded background means targets appear earlier and faster. A bright sky background can wash out early target reading. Adjust look zone depth accordingly.</div>
+    <h3 class="section">During the Round</h3>
+    <ul class="checklist">
+      <li>Between stations: breathe, roll shoulders, do NOT calculate running score</li>
+      <li>After each miss: reset protocol, not analysis</li>
+      <li>After each hit: brief acknowledgement, immediate return to routine</li>
+      <li>Protect your routine timing: same pace at target 1 as target 124</li>
+      <li>If you feel rushed: slow your WALK between stations — reclaim tempo</li>
+    </ul>
+    <h3 class="section">Equipment Strategy</h3>
+    <ul class="checklist">
+      <li>Shell selection: 28–32g loads, 7.5 or 8 shot — check competition legal limits</li>
+      <li>Choke: ¾ or full for Olympic Bunker — tighter than American Trap</li>
+      <li>Always carry a backup choke key and a cleaning rod</li>
+      <li>Know your gun's point of impact — it should shoot where you look, not where you aim</li>
+      <li>If a malfunction occurs mid-round: stay calm, follow competition rules for misfires</li>
+    </ul>
+    <h3 class="section">Post-Round Review Protocol</h3>
+    <p class="body">After every competition round, complete a structured debrief before you leave the range. This is where progress is made. Raw score alone tells you nothing about what to improve.</p>
+    <ul class="checklist">
+      <li>Record: score by station (not just total)</li>
+      <li>Identify: which station had most misses — that is the next training priority</li>
+      <li>Identify: was there a pattern to misses? (angle direction, early/late round, after prior miss)</li>
+      <li>Rate: mental game 1–10, physical execution 1–10</li>
+      <li>One improvement sentence: "Next round I will ___"</li>
+    </ul>
+  `,
+  drills: [
+    {
+      id: 'comp_d1',
+      title: 'Competition Simulation Round',
+      difficulty: 'Advanced',
+      location: 'Range',
+      time: '1 round',
+      desc: `Shoot a full 25-target round under simulated competition rules: no warm-up shots beforehand, follow full pre-shot routine every single target, have someone call your score audibly after each target, use a stopwatch to ensure your routine timing stays within 2 seconds of your normal average. Debrief immediately after using the post-round protocol. This is the most valuable training round in your arsenal.`
+    },
+    {
+      id: 'comp_d2',
+      title: 'Equipment Malfunction Protocol',
+      difficulty: 'Intermediate',
+      location: 'Range',
+      time: '15 min',
+      desc: `Dry run: simulate a misfire at station 3, mid-round. Practice the full ISSF misfire procedure: keep gun pointed downrange, wait 10 seconds, open action carefully, inspect. Practice this until the procedure is automatic. Competition stress makes forgotten procedures catastrophic — a shooter who fumbles a misfire and rushes the next target often loses 2–3 targets in the emotional aftermath.`
+    },
+    {
+      id: 'comp_d3',
+      title: 'Station Score Audit',
+      difficulty: 'Intermediate',
+      location: 'Range / Home',
+      time: '30 min',
+      desc: `Review your last 5 competition scorecards. Tally hits and misses BY STATION. Calculate your hit percentage per station. Rank stations 1–5 worst to best. Your worst station is your training priority — not your best station. Most shooters over-train their strengths. Build a 4-week plan targeting only your two worst stations with double the number of targets per session.`
+    }
+  ],
+  quiz: [
+    { q: 'When should you check your running score during a competition round?', opts: ['After every 5 targets','Never — between stations only, at most','Only at the halfway point','As often as you want'], correct: 1, exp: 'Checking score mid-round activates calculation and pressure thinking. Focus belongs entirely on the next target. If you must check, do so only between stations, not during.' },
+    { q: 'What choke is recommended for Olympic Bunker?', opts: ['Cylinder or skeet','Improved cylinder','Half choke','Three-quarter or full choke'], correct: 3, exp: 'Three-quarter to full choke is standard for Olympic Bunker — tighter than American Trap — because targets travel farther (minimum 76m) and precision pattern placement matters.' },
+    { q: 'What should you do if you feel rushed during a competition round?', opts: ['Speed up your shooting to match the feeling','Focus harder on the next target','Slow down your walk between stations to reclaim your tempo','Ask for a time extension'], correct: 2, exp: 'The walk between stations is the only thing you control. Slowing it deliberately resets your physical tempo without breaking rules or disrupting the squad.' },
+    { q: 'What is the most useful metric from a competition debrief?', opts: ['Total score only','Score broken down by station','Weather conditions','How other competitors performed'], correct: 1, exp: 'Station-by-station breakdown reveals WHERE your misses happen, which identifies the specific training priority. Total score alone is useless for improvement planning.' },
+    { q: 'How should training volume change in the week before a competition?', opts: ['Increase by 50% to sharpen form','Maintain exactly the same','Reduce volume by 30%, maintain quality','Stop all training for full rest'], correct: 2, exp: '30% volume reduction preserves physical sharpness without adding fatigue. Quality of execution is maintained — more targets at this point adds tired-body errors, not improvement.' },
+  ]
+}
+};
+
+// ═══════════════════════════════════════════════════════
+// RULES CONTENT
+// ═══════════════════════════════════════════════════════
+const RULES_DATA = [
+  { title: 'Target Specifications', text: 'Standard clay targets: 110mm diameter, orange or black. Must travel minimum 76m from bunker. Angle range: ±45° horizontal. Height: 1.5–4m at 10m from the bunker. Wind gates apply in adverse conditions.' },
+  { title: 'Scoring', text: 'One point per target hit, zero for miss. A target is "lost" if not completely broken. Referee has final call on whether a target is killed. Doubles or ricochet hits do not count.' },
+  { title: 'Qualification Format', text: '125 targets over 5 rounds. Squads of 6 shooters rotate through all 5 stations per round. Each shooter fires one target per station before rotating. 25 targets per round.' },
+  { title: 'Final Format', text: 'Top 6 shooters from qualification advance. Finals consist of 50 targets with a shoot-off for tied positions. The final format eliminates one shooter at a time after defined intervals.' },
+  { title: 'Ammunition Rules', text: 'Maximum shot charge: 28g (junior/master), 28g (Olympic events under current ISSF rules). Shot size: no larger than 2.5mm diameter (approximately No. 7.5 US). Smokeless powder only. Velocity: maximum 1,400 ft/s (approximately 426 m/s).' },
+  { title: 'Gun Rules', text: 'Any gauge up to 12 gauge. No semi-automatic restrictions for Olympic Bunker (both semi-auto and O/U are legal). Maximum barrel length: no restriction but practical limit is 76–81cm. Muzzle brake permitted.' },
+  { title: 'Shooter Ready Call', text: 'Shooter calls "Pull" (or equivalent) to signal readiness. The target must be released within 0–3 seconds of the call (random delay). Shooter must be in position and gun mounted before calling.' },
+  { title: 'Misfire / Malfunction', text: 'If the gun fails to fire (not shooter error): keep gun pointed downrange, wait 10 seconds before opening action. Referee may allow a repeat target. If the shell fires but target was not thrown correctly, a new target is granted.' },
+  { title: 'Safety Rules', text: 'Gun must remain unloaded until on the shooting station. Action must be open when moving between stations. Gun pointed downrange at all times when loaded. Refusal to comply results in disqualification.' },
+  { title: 'ISSF Attire & Conduct', text: 'No specific uniform requirement for club competition. ISSF international events require country team uniform. No coaching or electronic communication during rounds. Respectful conduct toward referees and competitors is mandatory.' },
+];
+
+// ═══════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  btns.forEach(b => { if (b.textContent.toLowerCase().includes(name === 'home' ? 'home' : name === 'tracker' ? 'tracker' : name === 'rules' ? 'rules' : '')) b.classList.add('active'); });
+  if (name === 'tracker') renderTracker();
+  if (name === 'rules') renderRules();
+  if (name === 'home') renderModules();
+}
+
+// ═══════════════════════════════════════════════════════
+// MODULES
+// ═══════════════════════════════════════════════════════
+function getModuleProgress(id) {
+  const mod = MODULES.find(m => m.id === id);
+  if (!mod) return 0;
+  const content = LESSON_CONTENT[id];
+  let done = 0, total = 0;
+  if (content) {
+    total = content.drills.length + 1; // drills + quiz
+    content.drills.forEach(d => { if (state.completedDrills[d.id]) done++; });
+    if (state.quizScores[id] >= 70) done++;
+  }
+  return total ? Math.round((done / total) * 100) : 0;
+}
+
+function renderModules() {
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = '';
+  MODULES.forEach(mod => {
+    const locked = state.xp < mod.unlockAt;
+    const pct = getModuleProgress(mod.id);
+    const complete = pct === 100;
+    const card = document.createElement('div');
+    card.className = 'module-card' + (locked ? ' locked' : '');
+    card.innerHTML = `
+      <div class="icon">${mod.icon}</div>
+      ${complete ? '<div class="badge">DONE</div>' : locked ? '<div class="lock-icon">🔒 ' + mod.unlockAt + ' XP</div>' : ''}
+      <h3>${mod.title}</h3>
+      <p>${mod.desc}</p>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+    `;
+    if (!locked) card.onclick = () => openLesson(mod.id);
+    grid.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// LESSON
+// ═══════════════════════════════════════════════════════
+let currentLesson = null;
+
+function openLesson(id) {
+  currentLesson = id;
+  const mod = MODULES.find(m => m.id === id);
+  const content = LESSON_CONTENT[id];
+  showScreen('lesson');
+
+  document.getElementById('lesson-header').innerHTML = `
+    <h2>${mod.icon} ${mod.title}</h2>
+    <div class="meta">${content.drills.length} drills &nbsp;·&nbsp; ${content.quiz.length} quiz questions &nbsp;·&nbsp; Progress: ${getModuleProgress(id)}%</div>
+  `;
+
+  const tabs = [
+    { id: 'learn', label: '📖 Learn' },
+    { id: 'drills', label: '🏋️ Drills' },
+    { id: 'quiz', label: '❓ Quiz' },
+  ];
+
+  document.getElementById('lesson-tabs').innerHTML = tabs.map((t, i) =>
+    `<button class="ltab ${i === 0 ? 'active' : ''}" onclick="switchTab('${t.id}')">${t.label}</button>`
+  ).join('');
+
+  document.getElementById('lesson-content').innerHTML = `
+    <div id="tab-learn" class="tab-pane active">${content.learn}</div>
+    <div id="tab-drills" class="tab-pane">${renderDrills(content.drills)}</div>
+    <div id="tab-quiz" class="tab-pane">${renderQuiz(id, content.quiz)}</div>
+  `;
+
+  // draw field diagram if needed
+  if (id === 'intro') setTimeout(drawField, 50);
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ltab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  document.querySelectorAll('.ltab').forEach(b => { if (b.textContent.toLowerCase().includes(tabId === 'learn' ? 'learn' : tabId === 'drills' ? 'drill' : 'quiz')) b.classList.add('active'); });
+}
+
+function renderDrills(drills) {
+  return drills.map(d => {
+    const done = !!state.completedDrills[d.id];
+    return `
+    <div class="drill-card">
+      <h4>${d.title}</h4>
+      <p>${d.desc}</p>
+      <div class="drill-meta">
+        <span><strong>Level:</strong> ${d.difficulty}</span>
+        <span><strong>Where:</strong> ${d.location}</span>
+        <span><strong>Time:</strong> ${d.time}</span>
+      </div>
+      <button class="complete-btn ${done ? 'done' : ''}" onclick="completeDrill('${d.id}', this)">
+        ${done ? '✓ Completed' : 'Mark Complete'}
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function completeDrill(drillId, btn) {
+  if (state.completedDrills[drillId]) return;
+  state.completedDrills[drillId] = true;
+  saveState();
+  btn.textContent = '✓ Completed';
+  btn.classList.add('done');
+  addXP(25, 'Drill completed');
+  updateModuleHeader();
+}
+
+function updateModuleHeader() {
+  if (!currentLesson) return;
+  const mod = MODULES.find(m => m.id === currentLesson);
+  document.getElementById('lesson-header').querySelector('.meta').textContent =
+    `${LESSON_CONTENT[currentLesson].drills.length} drills · ${LESSON_CONTENT[currentLesson].quiz.length} quiz questions · Progress: ${getModuleProgress(currentLesson)}%`;
+}
+
+// ═══════════════════════════════════════════════════════
+// QUIZ
+// ═══════════════════════════════════════════════════════
+function renderQuiz(moduleId, questions) {
+  const prev = state.quizScores[moduleId];
+  const prevHtml = prev !== undefined ? `<div style="margin-bottom:12px;font-size:.82rem;color:var(--text-dim)">Previous best: <strong style="color:var(--gold)">${prev}%</strong></div>` : '';
+  const qs = questions.map((q, i) => `
+    <div class="quiz-q" id="qq-${moduleId}-${i}">
+      <p>${i + 1}. ${q.q}</p>
+      <div class="quiz-options">
+        ${q.opts.map((o, j) => `<button class="quiz-opt" onclick="selectOpt(this,'${moduleId}',${i},${j})">${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="qf-${moduleId}-${i}">${q.exp}</div>
+    </div>
+  `).join('');
+  return `
+    ${prevHtml}
+    <form id="quiz-form-${moduleId}">
+      ${qs}
+      <button type="button" id="quiz-submit" onclick="submitQuiz('${moduleId}')">Submit Answers</button>
+      <div id="quiz-result"></div>
+    </form>`;
+}
+
+const quizAnswers = {};
+function selectOpt(btn, modId, qIdx, optIdx) {
+  const q = btn.closest('.quiz-q');
+  q.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('selected'));
+  btn.style.borderColor = 'var(--gold)';
+  if (!quizAnswers[modId]) quizAnswers[modId] = {};
+  quizAnswers[modId][qIdx] = optIdx;
+}
+
+function submitQuiz(moduleId) {
+  const content = LESSON_CONTENT[moduleId];
+  const answers = quizAnswers[moduleId] || {};
+  let correct = 0;
+  content.quiz.forEach((q, i) => {
+    const selected = answers[i];
+    const qq = document.getElementById(`qq-${moduleId}-${i}`);
+    const feedback = document.getElementById(`qf-${moduleId}-${i}`);
+    qq.querySelectorAll('.quiz-opt').forEach((b, j) => {
+      if (j === q.correct) b.classList.add('correct');
+      if (selected === j && j !== q.correct) b.classList.add('wrong');
+    });
+    feedback.classList.add('show');
+    feedback.classList.add(selected === q.correct ? 'ok' : 'fail');
+    if (selected === q.correct) correct++;
+  });
+  const pct = Math.round((correct / content.quiz.length) * 100);
+  const pass = pct >= 70;
+  const res = document.getElementById('quiz-result');
+  res.style.display = 'block';
+  res.className = 'quiz-result ' + (pass ? 'pass' : 'fail');
+  res.textContent = pass
+    ? `✓ Passed! ${correct}/${content.quiz.length} correct (${pct}%). +50 XP`
+    : `✗ ${correct}/${content.quiz.length} correct (${pct}%). Need 70% to pass. Review the material and retry.`;
+
+  if (pass && (state.quizScores[moduleId] || 0) < pct) {
+    state.quizScores[moduleId] = pct;
+    saveState();
+    addXP(50, 'Quiz passed');
+    updateModuleHeader();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// TRACKER
+// ═══════════════════════════════════════════════════════
+function logSession() {
+  const date = document.getElementById('f-date').value;
+  const targets = parseInt(document.getElementById('f-targets').value);
+  const hits = parseInt(document.getElementById('f-hits').value);
+  const stage = document.getElementById('f-stage').value;
+  const notes = document.getElementById('f-notes').value;
+  if (!date || isNaN(targets) || isNaN(hits)) { showToast('Fill in date, targets, and hits'); return; }
+  if (hits > targets) { showToast('Hits cannot exceed targets'); return; }
+  state.sessions.unshift({ date, targets, hits, stage, notes, id: Date.now() });
+  saveState();
+  addXP(10, 'Session logged');
+  renderTracker();
+  document.getElementById('f-notes').value = '';
+}
+
+function deleteSession(id) {
+  state.sessions = state.sessions.filter(s => s.id !== id);
+  saveState();
+  renderTracker();
+}
+
+function renderTracker() {
+  const sessions = state.sessions;
+  const total = sessions.reduce((a, s) => a + s.targets, 0);
+  const totalHits = sessions.reduce((a, s) => a + s.hits, 0);
+  const avg = sessions.length ? Math.round((totalHits / total) * 100) : 0;
+  const best = sessions.length ? Math.max(...sessions.map(s => Math.round(s.hits / s.targets * 100))) : 0;
+
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-card"><div class="num">${sessions.length}</div><div class="lbl">Sessions</div></div>
+    <div class="stat-card"><div class="num">${total}</div><div class="lbl">Targets Shot</div></div>
+    <div class="stat-card"><div class="num">${avg}%</div><div class="lbl">Overall %</div></div>
+    <div class="stat-card"><div class="num">${best}%</div><div class="lbl">Best Session</div></div>
+  `;
+
+  drawScoreChart(sessions);
+
+  const list = document.getElementById('session-list');
+  if (!sessions.length) { list.innerHTML = '<p style="color:var(--text-dim);font-size:.85rem">No sessions logged yet.</p>'; return; }
+  list.innerHTML = sessions.map(s => {
+    const pct = Math.round((s.hits / s.targets) * 100);
+    const color = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--gold)' : pct >= 60 ? 'var(--orange)' : 'var(--red)';
+    return `<div class="session-row">
+      <div class="score" style="color:${color}">${s.hits}/${s.targets}</div>
+      <div class="detail">${pct}% &nbsp;·&nbsp; ${s.stage} &nbsp;·&nbsp; ${s.date}</div>
+      <div class="note">${s.notes || ''}</div>
+      <button class="delete-btn" onclick="deleteSession(${s.id})">✕</button>
+    </div>`;
+  }).join('');
+
+  // Set today's date default
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+}
+
+function drawScoreChart(sessions) {
+  const canvas = document.getElementById('score-chart');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 800;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const data = [...sessions].reverse().slice(-20);
+  if (!data.length) return;
+  const W = canvas.width, H = canvas.height;
+  const pad = { top: 20, bottom: 30, left: 40, right: 20 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 0, W, H);
+  // grid lines
+  [60, 70, 80, 90, 100].forEach(pct => {
+    const y = pad.top + gH - (pct - 50) / 50 * gH;
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.fillText(pct + '%', 2, y + 4);
+  });
+  // bars
+  const bw = Math.min(30, gW / data.length - 4);
+  data.forEach((s, i) => {
+    const pct = s.hits / s.targets;
+    const bh = pct * gH;
+    const x = pad.left + (i / data.length) * gW + (gW / data.length - bw) / 2;
+    const y = pad.top + gH - bh;
+    const color = pct >= .9 ? '#2ecc71' : pct >= .75 ? '#c9a227' : pct >= .6 ? '#e67e22' : '#e74c3c';
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, bw, bh);
+    ctx.fillStyle = '#888'; ctx.font = '9px sans-serif';
+    ctx.fillText(s.date.slice(5), x, H - 4);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// RULES
+// ═══════════════════════════════════════════════════════
+function renderRules() {
+  document.getElementById('rules-content').innerHTML = RULES_DATA.map(r =>
+    `<div class="rule-card"><h4>${r.title}</h4><p>${r.text}</p></div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// FIELD DIAGRAM
+// ═══════════════════════════════════════════════════════
+function drawField() {
+  const canvas = document.getElementById('c-field');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.fillStyle = '#1e2a1e';
+  ctx.fillRect(0, 0, W, H);
+
+  // Bunker
+  ctx.fillStyle = '#8B6914';
+  ctx.fillRect(W/2 - 120, H - 60, 240, 30);
+  ctx.fillStyle = '#c9a227';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('BUNKER (15 machines)', W/2, H - 40);
+
+  // Machines
+  const mColors = ['#e74c3c','#3498db','#2ecc71'];
+  [-2,-1,0,1,2].forEach((s, si) => {
+    const sx = W/2 + s * 40;
+    [-1,0,1].forEach((m, mi) => {
+      ctx.fillStyle = mColors[mi];
+      ctx.beginPath();
+      ctx.arc(sx + m*10, H - 50, 4, 0, Math.PI*2);
+      ctx.fill();
+    });
+  });
+
+  // Shooting stations
+  [-2,-1,0,1,2].forEach((s, si) => {
+    const sx = W/2 + s * 44;
+    ctx.fillStyle = '#c9a227';
+    ctx.beginPath();
+    ctx.arc(sx, 30, 14, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(si+1, sx, 35);
+  });
+  ctx.fillStyle = '#888';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('← 2.5m → ← 2.5m →', W/2, 60);
+
+  // Lines from stations toward bunker
+  [-2,-1,0,1,2].forEach((s) => {
+    ctx.strokeStyle = 'rgba(200,160,40,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W/2 + s*44, 44);
+    ctx.lineTo(W/2 + s*40, H - 65);
+    ctx.stroke();
+  });
+
+  // angle arcs from bunker
+  const angles = [-45,-30,-15,0,15,30,45];
+  angles.forEach(a => {
+    const rad = (a - 90) * Math.PI / 180;
+    ctx.strokeStyle = 'rgba(200,160,40,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W/2, H - 45);
+    ctx.lineTo(W/2 + Math.cos(rad)*120, H - 45 + Math.sin(rad)*120);
+    ctx.stroke();
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// BREATHING TOOL
+// ═══════════════════════════════════════════════════════
+let breathInterval = null;
+function startBreathing() {
+  const el = document.getElementById('breath-text');
+  const btn = document.querySelector('.breath-btn');
+  if (breathInterval) {
+    clearInterval(breathInterval);
+    breathInterval = null;
+    el.style.display = 'none';
+    btn.textContent = 'Start Box Breathing';
+    return;
+  }
+  el.style.display = 'block';
+  btn.textContent = 'Stop';
+  const phases = [
+    { text: 'INHALE', dur: 4000 },
+    { text: 'HOLD', dur: 4000 },
+    { text: 'EXHALE', dur: 4000 },
+    { text: 'HOLD', dur: 4000 },
+  ];
+  let pi = 0;
+  function next() {
+    el.textContent = phases[pi].text + '...';
+    pi = (pi + 1) % phases.length;
+  }
+  next();
+  breathInterval = setInterval(next, 4000);
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+// Inject breathing tool into mental learn tab after lesson opens
+const origOpen = window.openLesson;
+window.openLesson = function(id) {
+  origOpen ? origOpen(id) : openLesson(id);
+  if (id === 'mental') {
+    setTimeout(() => {
+      const learn = document.getElementById('tab-learn');
+      if (learn && !learn.querySelector('.breath-btn')) {
+        learn.innerHTML += `
+          <div class="mental-tool">
+            <h4>🫁 Box Breathing Practice</h4>
+            <p>Use between stations or when feeling competitive pressure. 4-count inhale → 4-count hold → 4-count exhale → 4-count hold. Activates parasympathetic response.</p>
+            <button class="breath-btn" onclick="startBreathing()">Start Box Breathing</button>
+            <div id="breath-text"></div>
+          </div>`;
+      }
+    }, 100);
+  }
+};
+
+updateXPBar();
+renderModules();
+</script>
+</body>
+</html>
